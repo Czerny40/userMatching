@@ -1,10 +1,11 @@
+{% comment %} Jinja2 템플릿 엔진 문법 사용 {% endcomment %}
 <h2>매칭 결과</h2>
 {% if matches %}
 <ul>
     {% for match in matches %}
     <li>
-        사용자 ID: {{ match.user_id }}, 
-        매칭 점수: {{ "%.2f"|format(100 - (match.similarity * 100)) }}점
+        유저명 : {{ match.user_id }}, 
+        매칭 점수 : {{ "%.2f"|format(100 - (match.similarity * 100)) }}점
     </li>
     {% endfor %}
 </ul>
