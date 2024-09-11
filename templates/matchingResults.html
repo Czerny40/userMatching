@@ -1,0 +1,13 @@
+<h2>매칭 결과</h2>
+{% if matches %}
+<ul>
+    {% for match in matches %}
+    <li>
+        사용자 ID: {{ match.user_id }}, 
+        매칭 점수: {{ "%.2f"|format(100 - (match.similarity * 100)) }}점
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>매칭 결과가 없습니다.</p>
+{% endif %}
