@@ -3,15 +3,36 @@ from fastapi import FastAPI, Request, Form, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
+from database import engine
+
+import models
 import schemas
 import crud
 import database
 
-logging.basicConfig(level=logging.DEBUG)
+# 로깅 설정
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],  # Spring Boot server address
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 templates = Jinja2Templates(directory="templates")
+
+models.Base.metadata.create_all(bind=engine)
+
+@app.get("/matching-form", response_class=HTMLResponse)
+async def matching_form(request: Request):
+    logger.debug("Rendering matching form")
+    return templates.TemplateResponse("matchingForm.html", {"request": request})
 
 @app.post("/match", response_class=HTMLResponse)
 async def match_users(
@@ -26,8 +47,8 @@ async def match_users(
     address: str = Form(...),
     db: Session = Depends(database.get_db),
 ):
+    logger.debug(f"Received match request for user_id: {user_id}")
     try:
-        logger.debug(f"Received match request for user_id: {user_id}")
         user_data = schemas.UserMatchingCreate(
             user_id=user_id,
             height=height,
@@ -46,9 +67,16 @@ async def match_users(
         matches = crud.find_matches(db, db_user)
         logger.debug(f"Found matches: {matches}")
 
-        return templates.TemplateResponse(
-            "matchingResults.html", {"request": request, "matches": matches}
-        )
+        try:
+            response = templates.TemplateResponse(
+                "matchingResults.html", {"request": request, "matches": matches}
+            )
+            logger.debug("Template rendered successfully")
+            return response
+        except Exception as template_error:
+            logger.error(f"Template rendering error: {str(template_error)}", exc_info=True)
+            raise HTTPException(status_code=500, detail=f"Template rendering error: {str(template_error)}")
+
     except ValueError as e:
         logger.error(f"ValueError in match_users: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -58,4 +86,5 @@ async def match_users(
 
 if __name__ == "__main__":
     import uvicorn
+    logger.info("Starting the application")
     uvicorn.run(app, host="0.0.0.0", port=8000)
