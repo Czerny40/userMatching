@@ -27,7 +27,7 @@ class UserMatchingService:
 
     @staticmethod
     def find_matches(db: Session, target_user: models.UserMatching, num_matches: int = 5) -> List[schemas.MatchResult]:
-        users = db.query(models.UserMatching).filter(models.UserMatching.id != target_user.id).all()
+        users = db.query(models.UserMatching).filter(models.UserMatching.user_id != target_user.user_id).all()
         similarities = [
             schemas.MatchResult(
                 user_id=user.user_id,
