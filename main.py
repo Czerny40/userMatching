@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine
+from pydantic import BaseModel
 
 import models
 import schemas
@@ -12,7 +13,9 @@ import crud
 import database
 
 # 로깅 설정
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -29,10 +32,24 @@ templates = Jinja2Templates(directory="templates")
 
 models.Base.metadata.create_all(bind=engine)
 
+
+class UserData(BaseModel):
+    user_id: str
+
+
+@app.post("/matching-form", response_class=HTMLResponse)
+async def matching_form(request: Request, user_data: UserData):
+    logger.debug(f"Rendering matching form for user: {user_data.user_id}")
+    return templates.TemplateResponse(
+        "matchingForm.html", {"request": request, "user_id": user_data.user_id}
+    )
+
+
 @app.get("/matching-form", response_class=HTMLResponse)
 async def matching_form(request: Request):
     logger.debug("Rendering matching form")
     return templates.TemplateResponse("matchingForm.html", {"request": request})
+
 
 @app.post("/match", response_class=HTMLResponse)
 async def match_users(
@@ -74,17 +91,26 @@ async def match_users(
             logger.debug("Template rendered successfully")
             return response
         except Exception as template_error:
-            logger.error(f"Template rendering error: {str(template_error)}", exc_info=True)
-            raise HTTPException(status_code=500, detail=f"Template rendering error: {str(template_error)}")
+            logger.error(
+                f"Template rendering error: {str(template_error)}", exc_info=True
+            )
+            raise HTTPException(
+                status_code=500,
+                detail=f"Template rendering error: {str(template_error)}",
+            )
 
     except ValueError as e:
         logger.error(f"ValueError in match_users: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Unexpected error in match_users: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {str(e)}"
+        )
+
 
 if __name__ == "__main__":
     import uvicorn
+
     logger.info("Starting the application")
     uvicorn.run(app, host="0.0.0.0", port=8000)
