@@ -1,4 +1,5 @@
 import logging
+import requests
 from fastapi import FastAPI, Request, Form, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -31,6 +32,8 @@ app.add_middleware(
 templates = Jinja2Templates(directory="templates")
 
 models.Base.metadata.create_all(bind=engine)
+
+KAKAO_API_KEY = "9fff2cd7339e686d6bd9dca896426b20"
 
 
 class UserData(BaseModel):
@@ -66,6 +69,20 @@ async def match_users(
 ):
     # logger.debug(f"Received match request for user_id: {user_id}")
     try:
+        # Geocode the address using Kakao API
+        kakao_url = "https://dapi.kakao.com/v2/local/search/address.json"
+        headers = {"Authorization": f"KakaoAK {KAKAO_API_KEY}"}
+        params = {"query": address}
+        response = requests.get(kakao_url, headers=headers, params=params)
+        response.raise_for_status()
+        result = response.json()
+
+        if not result["documents"]:
+            raise ValueError("Invalid address")
+
+        latitude = float(result["documents"][0]["y"])
+        longitude = float(result["documents"][0]["x"])
+        
         user_data = schemas.UserMatchingCreate(
             user_id=user_id,
             height=height,
@@ -75,6 +92,8 @@ async def match_users(
             squat=squat,
             deadlift=deadlift,
             address=address,
+            latitude=latitude,
+            longitude=longitude,
         )
         # logger.debug(f"Created user_data: {user_data}")
 
@@ -102,6 +121,9 @@ async def match_users(
     except ValueError as e:
         # logger.error(f"ValueError in match_users: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
+    except requests.RequestException as e:
+        # logger.error(f"Kakao API error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error communicating with Kakao API")
     except Exception as e:
         # logger.error(f"Unexpected error in match_users: {str(e)}", exc_info=True)
         raise HTTPException(

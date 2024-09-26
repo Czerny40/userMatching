@@ -14,6 +14,8 @@ class UserMatching(Base):
     squat = Column(Float, CheckConstraint('squat >= 0'))
     deadlift = Column(Float, CheckConstraint('deadlift >= 0'))
     address = Column(String(255))
+    latitude = Column(Float)
+    longitude = Column(Float)
 
     @validates('gender')
     def validate_gender(self, key, gender):

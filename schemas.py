@@ -9,6 +9,9 @@ class UserMatchingBase(BaseModel):
     squat: float = Field(..., ge=0)
     deadlift: float = Field(..., ge=0)
     address: str
+    latitude: float
+    longitude: float
+
 
 class UserMatchingCreate(UserMatchingBase):
     pass

@@ -6,4 +6,5 @@ cryptography==41.0.1
 pydantic==2.0.2
 python-dotenv==1.0.0
 jinja2==3.1.4
+requests==2.31.0
 # uvicorn main:app --reload
