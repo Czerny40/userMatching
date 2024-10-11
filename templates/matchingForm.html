@@ -1,29 +1,48 @@
-<form action="/match" method="post">
+<form action="/match" method="post" class="bg-dark text-white p-4 rounded">
     <input type="hidden" id="user_id" name="user_id" value="{{ user_id }}" />
 
-    <label for="height">키 (cm) :</label>
-    <input type="number" id="height" name="height" step="0.1" required /><br />
+    <div class="row g-3">
+        <div class="col-6">
+            <label for="height" class="form-label">키 (cm):</label>
+            <input type="number" class="form-control form-control-sm" id="height" name="height" step="0.1" required />
+        </div>
+        <div class="col-6">
+            <label for="benchpress" class="form-label">벤치프레스 (kg):</label>
+            <input type="number" class="form-control form-control-sm" id="benchpress" name="benchpress" placeholder="1RM" required />
+        </div>
+    </div>
 
-    <label for="weight">몸무게 (kg) :</label>
-    <input type="number" id="weight" name="weight" step="0.1" required /><br />
+    <div class="row g-3 mt-2">
+        <div class="col-6">
+            <label for="weight" class="form-label">몸무게 (kg):</label>
+            <input type="number" class="form-control form-control-sm" id="weight" name="weight" step="0.1" required />
+        </div>
+        <div class="col-6">
+            <label for="squat" class="form-label">스쿼트 (kg):</label>
+            <input type="number" class="form-control form-control-sm" id="squat" name="squat" placeholder="1RM" required />
+        </div>
+    </div>
 
-    <label for="gender">성별 :</label>
-    <select id="gender" name="gender" required>
-        <option value="M">남</option>
-        <option value="F">여</option></select
-    ><br />
+    <div class="row g-3 mt-2">
+        <div class="col-6">
+            <label for="gender" class="form-label">성별:</label>
+            <select class="form-select form-select-sm" id="gender" name="gender" required>
+                <option value="M">남</option>
+                <option value="F">여</option>
+            </select>
+        </div>
+        <div class="col-6">
+            <label for="deadlift" class="form-label">데드리프트 (kg):</label>
+            <input type="number" class="form-control form-control-sm" id="deadlift" name="deadlift" placeholder="1RM" required />
+        </div>
+    </div>
 
-    <label for="benchpress">벤치프레스 (kg) :</label>
-    <input type="number" id="benchpress" name="benchpress" placeholder="1RM 중량을 입력해주세요!" required /><br />
+    <div class="mt-3">
+        <label for="address" class="form-label">주소:</label>
+        <input type="text" class="form-control form-control-sm" id="address" name="address" placeholder="서울시 강남구" required />
+    </div>
 
-    <label for="squat">스쿼트 (kg) :</label>
-    <input type="number" id="squat" name="squat" placeholder="1RM 중량을 입력해주세요!" required /><br />
-
-    <label for="deadlift">데드리프트 (kg) :</label>
-    <input type="number" id="deadlift" name="deadlift" placeholder="1RM 중량을 입력해주세요!" required /><br />
-
-    <label for="address">주소 :</label>
-    <input type="text" id="address" name="address" placeholder="서울시 강남구" required /><br />
-
-    <input type="submit" value="Find Matches" />
+    <div class="text-center mt-4">
+        <button type="submit" class="btn custom-btn bordered" data-aos="fade-up" data-aos-delay="700">매칭 찾기</button>
+    </div>
 </form>

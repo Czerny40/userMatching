@@ -26,3 +26,4 @@ class MatchResult(BaseModel):
     user_id: str
     similarity: float
     ipf_score: float
+    address: str

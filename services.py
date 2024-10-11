@@ -54,6 +54,7 @@ class UserMatchingService:
                     user_id=user.user_id,
                     similarity=similarity,
                     ipf_score=UserMatchingService.get_ipf_gl_points(user),
+                    address=user.address,
                     distance=distance
                 ))
         matches.sort(key=lambda x: x.similarity)
