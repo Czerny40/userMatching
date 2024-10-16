@@ -1,5 +1,5 @@
 import math
-from typing import List
+from typing import List, Tuple
 from sqlalchemy.orm import Session
 import models, schemas
 
@@ -40,7 +40,7 @@ class UserMatchingService:
         return radius * c
 
     @staticmethod
-    def find_matches(db: Session, target_user: models.UserMatching, num_matches: int = 5) -> List[schemas.MatchResult]:
+    def find_matches(db: Session, target_user: models.UserMatching, page: int = 1, per_page: int = 5) -> Tuple[List[schemas.MatchResult], int]:
         users = db.query(models.UserMatching).filter(models.UserMatching.id != target_user.id).all()
         matches = []
         for user in users:
@@ -58,4 +58,7 @@ class UserMatchingService:
                     distance=distance
                 ))
         matches.sort(key=lambda x: x.similarity)
-        return matches[:num_matches]
+        total_matches = len(matches)
+        start = (page - 1) * per_page
+        end = start + per_page
+        return matches[start:end], total_matches

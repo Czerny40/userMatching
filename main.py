@@ -1,5 +1,6 @@
 import logging
 import requests
+import math
 from fastapi import FastAPI, Request, Form, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -12,12 +13,6 @@ import models
 import schemas
 import crud
 import database
-
-# 로깅 설정
-# logging.basicConfig(
-#     level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-# )
-# logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -42,7 +37,6 @@ class UserData(BaseModel):
 
 @app.post("/matching-form", response_class=HTMLResponse)
 async def matching_form(request: Request, user_data: UserData):
-    # logger.debug(f"Rendering matching form for user: {user_data.user_id}")
     return templates.TemplateResponse(
         "matchingForm.html", {"request": request, "user_id": user_data.user_id}
     )
@@ -50,7 +44,6 @@ async def matching_form(request: Request, user_data: UserData):
 
 @app.get("/matching-form", response_class=HTMLResponse)
 async def matching_form(request: Request):
-    # logger.debug("Rendering matching form")
     return templates.TemplateResponse("matchingForm.html", {"request": request})
 
 
@@ -65,9 +58,9 @@ async def match_users(
     squat: float = Form(...),
     deadlift: float = Form(...),
     address: str = Form(...),
+    page: int = Form(1),
     db: Session = Depends(database.get_db),
 ):
-    # logger.debug(f"Received match request for user_id: {user_id}")
     try:
         # Geocode the address using Kakao API
         kakao_url = "https://dapi.kakao.com/v2/local/search/address.json"
@@ -82,7 +75,7 @@ async def match_users(
 
         latitude = float(result["documents"][0]["y"])
         longitude = float(result["documents"][0]["x"])
-        
+
         user_data = schemas.UserMatchingCreate(
             user_id=user_id,
             height=height,
@@ -95,37 +88,67 @@ async def match_users(
             latitude=latitude,
             longitude=longitude,
         )
-        # logger.debug(f"Created user_data: {user_data}")
 
         db_user = crud.create_or_update_user(db, user_data)
-        # logger.debug(f"Created db_user: {db_user}")
 
-        matches = crud.find_matches(db, db_user)
-        # logger.debug(f"Found matches: {matches}")
+        matches, total_matches = crud.find_matches(db, db_user, page)
+        total_pages = math.ceil(total_matches / 5)
 
         try:
             response = templates.TemplateResponse(
-                "matchingResults.html", {"request": request, "matches": matches}
+                "matchingResults.html",
+                {
+                    "request": request,
+                    "matches": matches,
+                    "current_page": page,
+                    "total_pages": total_pages,
+                    "total_matches": total_matches,
+                    "user_id": user_id,
+                },
             )
-            # logger.debug("Template rendered successfully")
             return response
         except Exception as template_error:
-            # logger.error(
-            #     f"Template rendering error: {str(template_error)}", exc_info=True
-            # )
             raise HTTPException(
                 status_code=500,
                 detail=f"Template rendering error: {str(template_error)}",
             )
 
     except ValueError as e:
-        # logger.error(f"ValueError in match_users: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
     except requests.RequestException as e:
-        # logger.error(f"Kakao API error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Error communicating with Kakao API")
+        raise HTTPException(
+            status_code=500, detail="Error communicating with Kakao API"
+        )
     except Exception as e:
-        # logger.error(f"Unexpected error in match_users: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred: {str(e)}"
+        )
+
+
+@app.get("/match/{user_id}/{page}", response_class=HTMLResponse)
+async def get_matches(
+    request: Request, user_id: str, page: int, db: Session = Depends(database.get_db)
+):
+    try:
+        user = crud.get_user(db, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        matches, total_matches = crud.find_matches(db, user, page)
+        total_pages = math.ceil(total_matches / 5)
+
+        return templates.TemplateResponse(
+            "matchingResults.html",
+            {
+                "request": request,
+                "matches": matches,
+                "current_page": page,
+                "total_pages": total_pages,
+                "total_matches": total_matches,
+                "user_id": user_id,
+            },
+        )
+    except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred: {str(e)}"
         )
@@ -134,5 +157,4 @@ async def match_users(
 if __name__ == "__main__":
     import uvicorn
 
-    # logger.info("Starting the application")
     uvicorn.run(app, host="0.0.0.0", port=8000)

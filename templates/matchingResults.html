@@ -2,11 +2,24 @@
 
 {% if matches %} {% for match in matches %}
 <div class="mb-3">
-    <p>유저명: {{ match.user_id }}</p>
-    <p>매칭 점수: {{ "%.2f"|format(100 - (match.similarity * 100)) }}점</p>
-    <p>주소: {{ match.address }}</p>
+    유저명: {{ match.user_id }} 매칭 점수: {{ "%.2f"|format(100 - (match.similarity * 100)) }}점 주소: {{ match.address }}
     <a href="/messages?receiverName={{ match.user_id }}" class="btn btn-primary">메시지 보내기</a>
 </div>
-{% endfor %} {% else %}
+{% endfor %}
+
+<div class="pagination">
+    {% if current_page > 1 %}
+    <a href="javascript:void(0);" onclick="loadPage('{{ user_id }}', {{ current_page - 1 }})" class="btn btn-secondary">이전</a>
+    {% endif %}
+
+    <span>페이지 {{ current_page }} / {{ total_pages }}</span>
+
+    {% if current_page < total_pages %}
+    <a href="javascript:void(0);" onclick="loadPage('{{ user_id }}', {{ current_page + 1 }})" class="btn btn-secondary">다음</a>
+    {% endif %}
+</div>
+
+<p>총 {{ total_matches }}명의 매치가 있습니다.</p>
+{% else %}
 <p>매칭 결과가 없습니다.</p>
 {% endif %}
