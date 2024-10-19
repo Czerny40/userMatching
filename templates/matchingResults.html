@@ -1,22 +1,77 @@
-<h2>매칭 결과</h2>
+<style>
+  .matching-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(48, 48, 48, 0.7);
+    padding: 15px;
+    border-radius: 5px;
+  }
+
+  .result-info {
+    display: flex;
+    flex-grow: 1;
+  }
+
+  .result-item {
+    margin-right: 20px;
+    white-space: nowrap;
+  }
+
+  .btn-custom {
+    background-color: #f13a11;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none;
+  }
+
+  .btn-custom:hover {
+    background-color: #d32f2f;
+    color: white;
+  }
+</style>
+</br>
+<h2 class="text-white text-center mb-4" data-aos="fade-up" data-aos-delay="500">
+  매칭 결과
+</h2>
 
 {% if matches %} {% for match in matches %}
-<div class="mb-3">
-    유저명: {{ match.user_id }} 매칭 점수: {{ "%.2f"|format(100 - (match.similarity * 100)) }}점 주소: {{ match.address }}
-    <a href="/messages?receiverName={{ match.user_id }}" class="btn btn-primary">메시지 보내기</a>
+<div class="mb-3 matching-result">
+  <div class="result-info">
+    <span class="result-item">유저명: {{ match.user_id }}</span>
+    <span class="result-item"
+      >매칭 점수: {{ "%.2f"|format(100 - (match.similarity * 100)) }}점</span
+    >
+    <span class="result-item">주소: {{ match.address }}</span>
+  </div>
+  <a href="/messages?receiverName={{ match.user_id }}" class="btn btn-custom"
+    >메시지 보내기</a
+  >
 </div>
 {% endfor %}
 
 <div class="pagination">
-    {% if current_page > 1 %}
-    <a href="javascript:void(0);" onclick="loadPage('{{ user_id }}', {{ current_page - 1 }})" class="btn btn-secondary">이전</a>
-    {% endif %}
+  {% if current_page > 1 %}
+  <a
+    href="javascript:void(0);"
+    onclick="loadPage('{{ user_id }}', {{ current_page - 1 }})"
+    class="btn btn-secondary"
+    >이전</a
+  >
+  {% endif %}
 
-    <span>페이지 {{ current_page }} / {{ total_pages }}</span>
+  <span>페이지 {{ current_page }} / {{ total_pages }}</span>
 
-    {% if current_page < total_pages %}
-    <a href="javascript:void(0);" onclick="loadPage('{{ user_id }}', {{ current_page + 1 }})" class="btn btn-secondary">다음</a>
-    {% endif %}
+  {% if current_page < total_pages %}
+  <a
+    href="javascript:void(0);"
+    onclick="loadPage('{{ user_id }}', {{ current_page + 1 }})"
+    class="btn btn-secondary"
+    >다음</a
+  >
+  {% endif %}
 </div>
 
 <p>총 {{ total_matches }}명의 매치가 있습니다.</p>
