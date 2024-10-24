@@ -2,36 +2,55 @@
   .matching-result {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: center; 
     background-color: rgba(48, 48, 48, 0.7);
     padding: 15px;
     border-radius: 5px;
   }
-
+ 
   .result-info {
     display: flex;
     flex-grow: 1;
   }
-
+ 
   .result-item {
     margin-right: 20px;
     white-space: nowrap;
   }
-
+ 
   .btn-custom {
     background-color: #f13a11;
     border: none;
     color: white;
     padding: 8px 16px;
     border-radius: 5px;
-    text-decoration: none;
+    text-decoration: none;  
   }
-
+ 
   .btn-custom:hover {
     background-color: #d32f2f;
     color: white;
   }
-</style>
+ 
+  /* 페이지네이션 스타일 추가 */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    gap: 15px; /* 페이지 번호와 버튼 사이 간격 */
+  }
+ 
+  .pagination span {
+    margin: 0 10px;
+  }
+ 
+  .total-matches {
+    text-align: center;
+    margin-top: 10px;
+  }
+ </style>
+
 </br>
 <h2 class="text-white text-center mb-4" data-aos="fade-up" data-aos-delay="500">
   매칭 결과
@@ -52,29 +71,21 @@
 </div>
 {% endfor %}
 
-<div class="pagination">
-  {% if current_page > 1 %}
-  <a
-    href="javascript:void(0);"
-    onclick="loadPage('{{ user_id }}', {{ current_page - 1 }})"
-    class="btn btn-secondary"
-    >이전</a
-  >
-  {% endif %}
+ <div class="pagination">
+   {% if current_page > 1 %}
+     <a href="javascript:void(0);" onclick="loadPage('{{ user_id }}', {{ current_page - 1 }})" class="btn btn-secondary">이전</a>
+   {% endif %}
+   
+   <span>페이지 {{ current_page }} / {{ total_pages }}</span>
+   
+   {% if current_page < total_pages %}
+     <a href="javascript:void(0);" onclick="loadPage('{{ user_id }}', {{ current_page + 1 }})" class="btn btn-secondary">다음</a>
+   {% endif %}
+ </div>
 
-  <span>페이지 {{ current_page }} / {{ total_pages }}</span>
-
-  {% if current_page < total_pages %}
-  <a
-    href="javascript:void(0);"
-    onclick="loadPage('{{ user_id }}', {{ current_page + 1 }})"
-    class="btn btn-secondary"
-    >다음</a
-  >
-  {% endif %}
-</div>
-
-<p>총 {{ total_matches }}명의 매치가 있습니다.</p>
+ <div class="total-matches">
+   <p>총 {{ total_matches }}명의 추천 상대가 있습니다.</p>
+ </div>
 {% else %}
-<p>매칭 결과가 없습니다.</p>
+ <p class="text-center">매칭 결과가 없습니다.</p>
 {% endif %}
