@@ -1,6 +1,8 @@
 import logging
 import requests
 import math
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Form, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -27,9 +29,6 @@ app.add_middleware(
 templates = Jinja2Templates(directory="templates")
 
 models.Base.metadata.create_all(bind=engine)
-
-KAKAO_API_KEY = "9fff2cd7339e686d6bd9dca896426b20"
-
 
 class UserData(BaseModel):
     user_id: str
@@ -62,7 +61,7 @@ async def match_users(
     db: Session = Depends(database.get_db),
 ):
     try:
-        # Geocode the address using Kakao API
+        KAKAO_API_KEY = os.getenv("KAKAO_API_KEY")
         kakao_url = "https://dapi.kakao.com/v2/local/search/address.json"
         headers = {"Authorization": f"KakaoAK {KAKAO_API_KEY}"}
         params = {"query": address}

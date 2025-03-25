@@ -27,7 +27,7 @@ class UserMatchingService:
     
     @staticmethod
     def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-        radius = 6371  # Earth's radius in kilometers
+        radius = 6371
 
         lat1_rad = math.radians(lat1)
         lat2_rad = math.radians(lat2)
@@ -48,7 +48,7 @@ class UserMatchingService:
                 target_user.latitude, target_user.longitude,
                 user.latitude, user.longitude
             )
-            if distance <= 3:  # 3km radius
+            if distance <= 3:
                 similarity = UserMatchingService.calculate_similarity(target_user, user)
                 matches.append(schemas.MatchResult(
                     user_id=user.user_id,
